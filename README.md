@@ -1,9 +1,8 @@
 Kafka Connect REST Source connector
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
 
 ===
 Building and running Spring example in docker
+[![License](https://img.shields.io/badge/License-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)  
 ---
 ### 1 Installing dependencies and packaging the jar
 ```bash
