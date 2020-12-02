@@ -3,8 +3,9 @@
   "config": {
     "connector.class": "com.example.demo.SampleSourceConnector",
     "tasks.max": 1,
-    "http.url": "https://api.github.com/emojis",
+    "http.url": "http://codeforces.com/api/user.rating?handle=",
     "http.interval": 30000,
-    "http.topic": "github_emojis"
+    "http.topic": "codeforces",
+    "http.users": "not_so_cool_handle,lostground97"
   }
 }

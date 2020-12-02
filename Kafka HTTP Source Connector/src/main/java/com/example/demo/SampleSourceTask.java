@@ -29,7 +29,7 @@ public class SampleSourceTask extends SourceTask{
     private String topic;
     private Long interval;
     private String url;
-    private List<String> markets;
+    private List<String> users;
     private Long last_execution = 0L;
     private Map<String, Object> offsets = new HashMap<>();
 
@@ -43,22 +43,36 @@ public class SampleSourceTask extends SourceTask{
         topic = props.get(HTTP_TOPIC);
         interval = Long.valueOf(props.get(HTTP_INTERVAL));
         url = props.get(HTTP_URL);
+        users = asList(props.get(HTTP_USERS).split(","));
 
-        logger.info("Starting to fetch {} each {} ms", url, interval);
+        logger.info("Starting to fetch {} each {} ms for each {}", url, interval, users);
+
+        final Map<Map<String, Object>, Map<String, Object>> storageOffsets = context.offsetStorageReader()
+        .offsets(users.stream().map(s -> asMap(s)).collect(toList()));
+
+        users.stream().forEach(m -> {
+            offsets.put(m, 0L);
+          });
     }
 
     @Override
     public List<SourceRecord> poll() {
         if (System.currentTimeMillis() > (last_execution + interval)) {
         last_execution = System.currentTimeMillis();
-        List<SourceRecord> records = new ArrayList<>();
-        logger.info("Pooling url: {}",url);
-        records.add(new SourceRecord(
-            Collections.singletonMap("url",url),
-            Collections.singletonMap("offset",0),
-            topic, Schema.BYTES_SCHEMA,
-            getUrlContents(url)
-        ));
+        List<SourceRecord> records = new ArrayList<>(users.size());
+
+        users.stream().forEach(
+          m -> {
+            logger.info("Pooling url: {}/{}?from={}", url, m, offsets.get(m));
+
+            Map<String, Object>sourcePartition = singletonMap(m, null);
+            Map<String, Object>offset = singletonMap("last_execution",last_execution);
+            records.add(new SourceRecord(sourcePartition, offset,
+                topic, Schema.BYTES_SCHEMA,
+                getUrlContents(url, m)));
+            offsets.put(m, last_execution);
+          }
+      );
         return records;
         }
         return null;
@@ -69,11 +83,12 @@ public class SampleSourceTask extends SourceTask{
 
     }
 
-    private static byte[] getUrlContents(String sourceUrl) {
+    private static byte[] getUrlContents(String sourceUrl, String user) {
         StringBuilder content = new StringBuilder();
         try
         {
-          URL httpURL = new URL(sourceUrl);
+          String finalURL = sourceUrl + user;
+          URL httpURL = new URL(finalURL);
           BufferedReader in = new BufferedReader(
               new InputStreamReader(httpURL.openStream()));
     
