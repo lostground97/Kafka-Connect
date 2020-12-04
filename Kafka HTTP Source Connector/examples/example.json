@@ -1,11 +1,11 @@
 {
-  "name": "https",
+  "name": "http",
   "config": {
     "connector.class": "com.example.demo.SampleSourceConnector",
     "tasks.max": 1,
-    "http.url": "http://codeforces.com/api/user.rating?handle=",
+    "http.url": "http://localhost:9999/",
     "http.interval": 30000,
-    "http.topic": "codeforces",
-    "http.users": "not_so_cool_handle,lostground97"
+    "http.topic": "local",
+    "http.users": "1,2,3"
   }
 }
